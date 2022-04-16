@@ -1,7 +1,5 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Scanner;
 
 /**
@@ -15,8 +13,6 @@ public class MazeSolve {
     static int mazeY = 0;
     static int mazeEndX;
     static int mazeEndY;
-    static int playerX = 0;
-    static int playerY = 0;
 
     /**
      * ########## NEXT REVISIONS ##########
@@ -66,15 +62,14 @@ public class MazeSolve {
             }
             System.out.println();
         }
-        System.out.printf("Maze start: (%d, %d)\n", 0, 0);
-        System.out.printf("Maze end: (%d, %d)\n", mazeEndX + 1, mazeEndY + 1);
     }
 
     /**
+
      * This method will plot a point at the supplied coordinates and then print grid.
      * @param pointX x-coordinate
      * @param pointY y-coordinate
-     */
+
     public static void plotPoint(int pointX, int pointY) {
         int tempPlayerX = playerX;
         int tempPlayerY = playerY;
@@ -86,51 +81,54 @@ public class MazeSolve {
         printMaze();
     }
 
-    /**
+
      * This provides reusable neighbor checks
      * @param pathX
      * @param pathY
      * @return the cell instruction to place point depending on if the cell is not
-     */
+
     public static int neighborCheck(int pathX, int pathY) {
         System.out.println("(" + pathX + ", " + pathY + ")");
         // boolean neighborUp = false;
         if (!(pathY == 0)) {
-            if (maze[pathY - 1][pathX].equals("1") || maze[pathY][pathX - 1].equals("-")) {
+            if (maze[pathY - 1][pathX].equals("1") || maze[pathY - 1][pathX].equals("-")) {
                 return 1;
             }
-        }
+        } else {
+            if (maze[pathY][pathX].equals("1") || maze[pathY][pathX].equals("-")) {
+                return 1;
+            }
 
-        // boolean neighborDown = false;
-        if (!(pathY == mazeY)) {
-            if (!(maze[pathY + 1][pathX].equals("1")) || maze[pathY][pathX + 1].equals("-")) {
-                return 2;
+            // boolean neighborDown = false;
+            if (!(pathY == mazeY)) {
+                if (!(maze[pathY + 1][pathX].equals("1")) || maze[pathY][pathX + 1].equals("-")) {
+                    return 2;
+                }
+            }
+
+            // boolean neighborLeft = false;
+            if (!(pathX == 0)) {
+                if (maze[pathY][pathX - 1].equals("1") || maze[pathY][pathX - 1].equals("-")) {
+                    return 3;
+                }
+            }
+
+            // boolean neighborRight = false;
+            if (!(pathX == mazeX)) {
+                if (maze[pathY][pathX + 1].equals("1") || maze[pathY][pathX + 1].equals("-")) {
+                    return 4;
+                }
             }
         }
-
-        // boolean neighborLeft = false;
-        if (!(pathX == 0)) {
-            if (maze[pathY][pathX - 1].equals("1") || maze[pathY][pathX - 1].equals("-")) {
-                return 3;
-            }
-        }
-
-        // boolean neighborRight = false;
-        if (!(pathX == mazeX)) {
-            if (maze[pathY][pathX + 1].equals("1") || maze[pathY][pathX + 1].equals("-")) {
-                return 4;
-            }
-        }
-
         return 5;
     }
 
-    /**
+
      * This function checks if there is a dash in the points vicinity
      * @param pointX pointX
      * @param pointY pointY
      * @return t/f if point is "tethered"
-     */
+
     public static boolean dashTetherCheck(int pointX, int pointY) {
         // NEED TO ADD CORNER CASE IN ADDITION TO LEFT RIGHT TOP BOTTOM SIDE
         if (pointX == 0) { // Left
@@ -172,11 +170,11 @@ public class MazeSolve {
         }
     }
 
-    /**
+
      * This function implements recursion to solve a provided maze.
      * Base case: When the maze "path" reaches the end of maze
      * Recursion case:
-     */
+
     public static boolean mazePath() {
         int pathX = playerX;
         int pathY = playerY;
@@ -219,7 +217,7 @@ public class MazeSolve {
                 }
             }
 
-            /**
+    //////
              // Recursive Case
              for (pathY = 0; pathY < mazeY; pathY++) {
              for (pathX = 0; pathX < mazeX; pathX++) {
@@ -254,13 +252,106 @@ public class MazeSolve {
              }
              }
              }
-             **/
+             //////
         } else {
             playerX++;
             playerY++;
             return mazePath();
         }
         return true;
+    }
+    **/
+
+    /**
+     * If the path only has one available spot to move then it has reached a dead end.
+     * This needs to be used in conjunction with a call that specifies the next cell to be tested.
+     * @param pathX this is the next valid cells x-coordinate
+     * @param pathY this is the next valid cells x-coordinate
+     * @return t/f if it's a valid path
+     */
+    public static boolean validPath(int pathX, int pathY) {
+        // This function will check if the supplied point is a "1" or "-"
+        if (maze[pathY][pathX].equals("1") || maze[pathY][pathX].equals("-")) {
+            return false;
+        }
+        /**
+        if (pathX == 0 || pathY == 0) {
+            return false;
+        } else if (pathX == 1 && pathY == 1) { // Prevents starting point loop
+            return false;
+        }
+        int openingCount = 0;
+        System.out.println(pathX + ", " + pathY);
+        for (int i = -1; i < 2; i++) {
+            for (int k = -1; k < 2; k++) {
+                // if (!(i == 0 && k == 0)) { // This is so it doesn't count itself - OBSOLETE becasue itself will be a dash
+                    if (!(maze[pathY + i][pathX + k].equals("1") || maze[pathY + i][pathX + k].equals("-"))) {
+                        openingCount += 1;
+                    }
+                //}
+                //System.out.println(maze[pathY + i][pathX + k]);
+            }
+        }
+        if (openingCount > 0) {
+            return true;
+        }
+        return false;
+         **/
+        return true;
+    }
+
+    /**
+     * Not sure what exactly I was thinking with the plotPoint function so here is a new one.
+     * @param pointX to plot
+     * @param pointY to plot
+     * @param value what to replace it with 0/1
+     */
+    public static void setPoint(int pointX, int pointY, int value) {
+        if (value == 0) {
+            maze[pointY][pointX] = "-";
+        } else {
+            maze[pointY][pointX] = "-";
+        }
+    }
+
+    /**
+     * New version of above function. (!)
+     * @param playerX x-coordinate
+     * @param playerY y-coordinate
+     * @return if solved or unsolvable
+     */
+    public static boolean newMazePath(int playerX, int playerY) {
+        printMaze();
+
+        // This is not needed because the recursion will check each path regardless
+        // !(maze[playerY - 1 + i][playerX - 1 + i].equals("-"))
+        for (int i = -1; i < 2; i++) {
+            for (int k = -1; k < 2; k++) {
+                // Base case
+                if (maze[playerY + i][playerX + k].equals("F")) {
+                    return true;
+                }
+                // Recursion case if open path is found and chosen
+                //  && newMazePath(playerX + k, playerY + i)
+                if (validPath(playerX + k, playerY + i)) {
+                    setPoint(playerX + k, playerY + i, 1);
+                    return newMazePath(playerX + k, playerY + i);
+                }
+                /**
+                if (!(i == 0 && k == 0)) {
+                    if (validPath(playerX + k, playerY + i)) {
+                        System.out.println((playerX) + " : " + (playerY));
+                        setPoint(playerX + k, playerY + i, 1);
+                        newMazePath(playerX + k, playerY + i);
+                        //return true;
+                    } else if (maze[playerY + i][playerX + k].equals("-")) {
+                        setPoint(playerX + k, playerY + i, 0);
+                    }
+                }
+                 **/
+            }
+        }
+        return false;
     }
 
     /**
@@ -279,7 +370,11 @@ public class MazeSolve {
             //File fileFile = new File(String.valueOf(path.toAbsolutePath()));
             buildMaze("ahhaha");
             printMaze();
-            if (mazePath()) {
+            System.out.printf("Maze start: (%d, %d)\n", 0, 0);
+            System.out.printf("Maze end: (%d, %d)\n", mazeEndX + 1, mazeEndY + 1);
+            // Border of ones to prevent ArrayOutOfBounds errors so origin has to be (1,1)
+            setPoint(1, 1, 1);
+            if (newMazePath(1, 1)) {
                 System.out.println("Solved : () !!!!");
             } else {
                 System.out.println("You got some work to do");
