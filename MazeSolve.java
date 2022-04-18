@@ -8,32 +8,48 @@ import java.util.Scanner;
  * @version 1
  */
 public class MazeSolve {
-    static String[][] maze;
-    static int mazeX = 0;
-    static int mazeY = 0;
-    static int mazeEndX;
-    static int mazeEndY;
-    static int recursionCount = 0;
+    String[][] maze;
+    int mazeX = 0;
+    int mazeY = 0;
+    int mazeEndX;
+    int mazeEndY;
+    int recursionCount = 0;
 
     /**
      * ########## NEXT REVISIONS ##########
-     * Flood-fill algorithm
-     * Work on main (buildMaze parameters specifically)
+     * Take out diagonal moves < DONE
+     * Make class win function
+     * Create separate testing file using asserts to run through testing
+     * Flood-fill algorithm (and my interpretation of it vs. algorithm)
+     * Work on main (buildMaze parameters specifically) < DONE
      * Input validation for filename
-     * Make whole class non-static
+     * Make whole class non-static < DONE
      *      Constructor takes in filename to create board
      *      Call using Object(MazeSolve).solveFloodFill || Object(MazeSolve).solveRecursion
      * ########## NEXT REVISIONS ##########
      **/
 
     /**
+     * This is the MazeSolve constructor that initializes the board for the instance
+     * @param filename the filename
+     */
+    public MazeSolve(String filename) throws FileNotFoundException {
+        try {
+            buildMaze("src/" + filename);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            System.out.println("Error opening file to build maze");
+        }
+    }
+
+    /**
      * Creates maze from supplied file.
      * @param filename filename
      * @throws FileNotFoundException e
      */
-    public static void buildMaze(String filename) throws FileNotFoundException {
+    public void buildMaze(String filename) throws FileNotFoundException {
         try {
-            File mazeFile = new File("src/maze1.txt");
+            File mazeFile = new File(filename);
             Scanner sc = new Scanner(mazeFile);
             mazeY = sc.nextInt();
             mazeX = sc.nextInt();
@@ -60,7 +76,7 @@ public class MazeSolve {
     /**
      * This will print the maze.
      **/
-    public static void printMaze() {
+    public void printMaze() {
         System.out.println("### MAZE SOLVE ###");
         for (int i = 0; i < mazeY; i++) {
             for (int k = 0; k < mazeX; k++) {
@@ -77,7 +93,7 @@ public class MazeSolve {
      * @param pathY this is the next valid cells x-coordinate
      * @return t/f if it's a valid path
      */
-    public static boolean validPath(int pathX, int pathY) {
+    public boolean validPath(int pathX, int pathY) {
         // This function will check if the supplied point is a "1" or "-"
         if (maze[pathY][pathX].equals("1") || maze[pathY][pathX].equals("-")) {
             return false;
@@ -91,9 +107,9 @@ public class MazeSolve {
      * @param pointY to plot
      * @param value what to replace it with 0/1
      */
-    public static void setPoint(int pointX, int pointY, int value) {
+    public void setPoint(int pointX, int pointY, int value) {
         if (value == 0) {
-            maze[pointY][pointX] = "-";
+            maze[pointY][pointX] = "0";
         } else {
             maze[pointY][pointX] = "-";
         }
@@ -105,26 +121,73 @@ public class MazeSolve {
      * @param playerY y-coordinate
      * @return if solved or unsolvable
      */
-    public static boolean newMazePath(int playerX, int playerY) {
+    public boolean newMazePath(int playerX, int playerY) {
         printMaze();
         recursionCount++;
 
-        // This is not needed because the recursion will check each path regardless
-        // !(maze[playerY - 1 + i][playerX - 1 + i].equals("-"))
-        for (int i = -1; i < 2; i++) {
-            for (int k = -1; k < 2; k++) {
-                // Base case
-                if (maze[playerY + i][playerX + k].equals("F")) {
-                    return true;
-                }
-                // Recursion case if open path is found and chosen
-                //  && newMazePath(playerX + k, playerY + i)
-                if (validPath(playerX + k, playerY + i)) {
-                    setPoint(playerX + k, playerY + i, 1);
-                    return newMazePath(playerX + k, playerY + i);
+        if (validPath(playerX, playerY - 1)) {
+            // Base case
+            if (maze[playerY - 1][playerX].equals("F")) {
+                return true;
+            }
+
+            setPoint(playerX, playerY - 1, 1);
+            if (newMazePath(playerX, playerY - 1)) {
+                return true;
+            } else {
+                if (maze[playerY - 1][playerX].equals("-")) {
+                    setPoint(playerX, playerY - 1, 0);
                 }
             }
         }
+
+        if (validPath(playerX - 1, playerY)) {
+            // Base case
+            if (maze[playerY][playerX - 1].equals("F")) {
+                return true;
+            }
+
+            setPoint(playerX - 1, playerY, 1);
+            if (newMazePath(playerX - 1, playerY)) {
+                return true;
+            } else {
+                if (maze[playerY][playerX - 1].equals("-")) {
+                    setPoint(playerX - 1, playerY, 0);
+                }
+            }
+        }
+
+        if (validPath(playerX + 1, playerY)) {
+            // Base case
+            if (maze[playerY][playerX + 1].equals("F")) {
+                return true;
+            }
+            setPoint(playerX + 1, playerY, 1);
+            if (newMazePath(playerX + 1, playerY)) {
+                return true;
+            } else {
+                if (maze[playerY][playerX + 1].equals("-")) {
+                    setPoint(playerX + 1, playerY, 0);
+                }
+            }
+        }
+
+        if (validPath(playerX, playerY + 1)) {
+            // Base case
+            if (maze[playerY + 1][playerX].equals("F")) {
+                return true;
+            }
+
+            setPoint(playerX, playerY + 1, 1);
+            if (newMazePath(playerX, playerY + 1)) {
+                return true;
+            } else {
+                if (maze[playerY + 1][playerX].equals("-")) {
+                    setPoint(playerX, playerY + 1, 0);
+                }
+            }
+        }
+
         return false;
     }
 
@@ -135,27 +198,23 @@ public class MazeSolve {
      * @throws FileNotFoundException e
      */
     public static void main(String[] args) throws FileNotFoundException {
-        // This will be for user input files - NOT WORKING YET - COME BACK TO
-        //Scanner fileSc = new Scanner(System.in);
-
+        System.out.println("Enter filename");
+        Scanner fileSc = new Scanner(System.in);
         System.out.println();
 
-        try {
-            //File fileFile = new File(String.valueOf(path.toAbsolutePath()));
-            buildMaze("ahhaha");
-            printMaze();
-            System.out.printf("Maze start: (%d, %d)\n", 0, 0);
-            System.out.printf("Maze end: (%d, %d)\n", mazeEndX + 1, mazeEndY + 1);
-            // Border of ones to prevent ArrayOutOfBounds errors so origin has to be (1,1)
-            setPoint(1, 1, 1);
-            if (newMazePath(1, 1)) {
-                System.out.println("Solved! : [Recursion Count] == " + recursionCount);
-            } else {
-                System.out.println("You got some work to do");
-            }
-        } catch (Exception e) {
-            System.out.println("Error opening file to build maze");
-            e.printStackTrace();
+        MazeSolve maze = new MazeSolve(fileSc.next());
+        System.out.printf("Maze start: (%d, %d)\n", 0, 0);
+        System.out.printf("Maze end: (%d, %d)\n", maze.mazeEndX + 1, maze.mazeEndY + 1);
+
+        // Border of ones to prevent ArrayOutOfBounds errors so origin has to be (1,1)
+        // Easier than edge cases lol
+        maze.setPoint(1, 1, 1);
+
+        // I should probably abstract into a class win function
+        if (maze.newMazePath(1, 1)) {
+            System.out.println("Solved! : [Recursion Count] == " + maze.recursionCount);
+        } else {
+            System.out.println("You got some work to do");
         }
     }
 }
